@@ -12,12 +12,14 @@ public class SignUp extends javax.swing.JFrame {
     
     IPClient parent;
     OutputStream out;
+    InputStream in;
     String msg;    
      /**
      * Creates new form SignUp
      */       
-    public SignUp(IPClient par,OutputStream o) {
+    public SignUp(IPClient par,OutputStream o,InputStream i) {
         out = o;
+        in = i;
         parent = par;
         initComponents();
     }
@@ -41,6 +43,7 @@ public class SignUp extends javax.swing.JFrame {
         jButtonRegister = new javax.swing.JButton();
         jButtonCancel = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
+        jButtonClear = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("GANGSHARE - New User SignUp");
@@ -114,23 +117,33 @@ public class SignUp extends javax.swing.JFrame {
         jLabel5.setForeground(new java.awt.Color(153, 0, 0));
         jLabel5.setText("GangShare");
 
+        jButtonClear.setText("Clear");
+        jButtonClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonClearActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(20, 20, 20)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(66, 66, 66)
+                            .addComponent(jLabel5)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(66, 66, 66)
-                        .addComponent(jLabel5)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jButtonRegister)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonClear, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(13, Short.MAX_VALUE))
+                .addContainerGap(3, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -140,20 +153,41 @@ public class SignUp extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButtonCancel)
+                    .addComponent(jButtonClear)
                     .addComponent(jButtonRegister))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+    private void receiveResponse() {
+        int c, i;
+        char [] ch = new char[1000];	
+        try {
+            i=0;
+            while (( c = in.read()) != '\n') {
+                ch[i] = (char) c;
+                i++;
+                System.out.print((char) c);
+            }
+            String msg = new String(ch);
+            msg = msg.trim();
+            System.out.println("\nResponse from server: " + msg);
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION: "+e.getMessage());
+        }
+   }
     
     private void sendMsg(String msg) {
         try {
+            msg = msg.concat("\n");
             byte bmsg[] = msg.getBytes();
             out.write(bmsg);
             System.out.println("Message sent to Server: "+ msg);
+            receiveResponse();
         } 
         catch(Exception e) {
             System.out.println("EXCEPTION: "+e.getMessage());
@@ -170,8 +204,8 @@ public class SignUp extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this,"Passwords don't match!","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
-        msg = "01%%"+jTextFieldUname.getText()+"%%"+new String(jPasswordFieldPwd.getPassword())+"%%"+jTextFieldEmail.getText()+"~"; 
-       // MESSAGE_TYPE + DATA (Delimiter = %%)
+        msg = "01:"+jTextFieldUname.getText()+":"+new String(jPasswordFieldPwd.getPassword())+":"+jTextFieldEmail.getText(); 
+       // Register Message = 01:USERNAME:PASSWORD:EMAIL~
         sendMsg(msg);
     }//GEN-LAST:event_jButtonRegisterActionPerformed
 
@@ -181,8 +215,17 @@ public class SignUp extends javax.swing.JFrame {
         this.setVisible(false);
     }//GEN-LAST:event_jButtonCancelActionPerformed
 
+    private void jButtonClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearActionPerformed
+        // TODO add your handling code here:
+        jTextFieldUname.setText("");
+        jPasswordFieldPwd.setText("");
+        jTextFieldEmail.setText("");
+        jPasswordFieldPwd2.setText("");
+    }//GEN-LAST:event_jButtonClearActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonCancel;
+    private javax.swing.JButton jButtonClear;
     private javax.swing.JButton jButtonRegister;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

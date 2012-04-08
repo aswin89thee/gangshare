@@ -1,63 +1,26 @@
 package ipclient;
 
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.io.File;
+import java.io.*;
+import java.net.*;
+import javax.swing.JOptionPane;
 /**
  *
  * @author Ramit
  */
 public class IPClient extends javax.swing.JFrame {
     
-    public static final String FILEPUBLISH = "02";
-    
     //TCP
     InetAddress host;
     Socket s;
     int port = 6000;
     OutputStream out;
+    InputStream in;
     /**
      * Creates new form IPClient2
      */
     public IPClient() {
         initComponents();
         initConnection();
-    }
-    
-    //Send a string message to the server
-    private void sendMsg(String msg) 
-    {
-        try {
-            byte bmsg[] = msg.getBytes();
-            out.write(bmsg);
-            System.out.println("Message sent to Server: "+ msg);
-        } 
-        catch(Exception e) {
-            System.out.println("EXCEPTION: "+e.getMessage());
-        }
-    }
-    
-    //Publish its own file to the server
-    public void publishFile(String path, String abstractOfFile)
-    {
-        String type = FILEPUBLISH;
-        String fileName = new String("");
-        double fileSize = 0;
-        String hostIP = host.toString();
-        byte[] digestOfFile = new byte[8000];
-        
-        //Get the details of the file - name, size
-        File file = new File(path);
-        fileSize = file.length();
-        fileName = file.getName();
-        
-        //Calculate the digest of the file - TO BE DONE
-        
-        
-        //Form the message to be sent
-        String msg = type + "%%" + fileName + "%%" + fileSize + "%%" + abstractOfFile + "%%" + digestOfFile;
-        sendMsg(msg);
     }
 
      private void initConnection() {
@@ -66,12 +29,53 @@ public class IPClient extends javax.swing.JFrame {
 	s = new Socket(host,port) ;
         System.out.println("Host " + host.getHostName() + " connected to Server on port " + port);
         out = s.getOutputStream();
+        in = s.getInputStream();
         } 
         catch(Exception e) {
             System.out.println("EXCEPTION: " + e.getMessage());
         }
     }
     
+     private void sendMsg(String msg) {
+        try {
+            msg = msg.concat("\n");
+            byte bmsg[] = msg.getBytes();
+            out.write(bmsg);
+            System.out.println("Message sent to Server: "+ msg);
+        } 
+        catch(Exception e) {
+            System.out.println("EXCEPTION: "+e.getMessage());
+        }
+    }
+     
+     private void receiveResponse() {
+        int c, i;
+        char [] ch = new char[1000];	
+        try {
+            i=0;
+            while (( c = in.read()) != '~'||( c = in.read()) != -1) {
+                ch[i] = (char) c;
+                i++;
+                //System.out.print((char) c);
+            }
+            String msg = new String(ch);
+            msg = msg.trim();
+            System.out.println("\nResponse from server: " + msg);
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION: "+e.getMessage());
+        }
+   }
+     
+     private void sendLogin(String msg) {
+         sendMsg(msg);
+         receiveResponse(); //0=Success -1=Pwd incorrect -2=Username incorrect
+     }
+     
+     private void sendForgotPwd(String msg) {
+         sendMsg(msg);
+         receiveResponse(); //0=Success -1=Failure
+     }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -86,7 +90,7 @@ public class IPClient extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jTextFieldUname = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jTextFieldPwd = new javax.swing.JTextField();
+        jPasswordFieldPwd = new javax.swing.JPasswordField();
         jButtonExit = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jButtonSignup = new javax.swing.JButton();
@@ -130,8 +134,8 @@ public class IPClient extends javax.swing.JFrame {
                             .addComponent(jLabel1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTextFieldUname)
-                            .addComponent(jTextFieldPwd, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addComponent(jTextFieldUname, javax.swing.GroupLayout.DEFAULT_SIZE, 115, Short.MAX_VALUE)
+                            .addComponent(jPasswordFieldPwd))))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -144,7 +148,7 @@ public class IPClient extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextFieldPwd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPasswordFieldPwd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jButtonLogin))
         );
@@ -185,6 +189,11 @@ public class IPClient extends javax.swing.JFrame {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Forgot Password?"));
 
         jButtonForgotPwd.setText("Submit");
+        jButtonForgotPwd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonForgotPwdActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Confirm Email Id :");
 
@@ -262,7 +271,7 @@ public class IPClient extends javax.swing.JFrame {
 
     private void jButtonSignupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSignupActionPerformed
         // TODO add your handling code here:
-        new SignUp(this,out).setVisible(true);
+        new SignUp(this,out,in).setVisible(true);
         this.setVisible(false); 
     }//GEN-LAST:event_jButtonSignupActionPerformed
 
@@ -279,7 +288,25 @@ public class IPClient extends javax.swing.JFrame {
 
     private void jButtonLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLoginActionPerformed
         // TODO add your handling code here:
+        if(jTextFieldUname.getText().equals("") || (new String(jPasswordFieldPwd.getPassword())).equals("")) {
+            JOptionPane.showMessageDialog(this,"Username and Password cannot be empty!","Error",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String msg = "02:"+jTextFieldUname.getText()+":"+(new String(jPasswordFieldPwd.getPassword()));
+        //Login Message = 02:USERNAME:PASSWORD~
+        sendLogin(msg);
     }//GEN-LAST:event_jButtonLoginActionPerformed
+
+    private void jButtonForgotPwdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonForgotPwdActionPerformed
+        // TODO add your handling code here:
+        if(jTextFieldEmail.getText().equals("")) {
+            JOptionPane.showMessageDialog(this,"Enter email id!","Error",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String msg = "03:"+jTextFieldEmail.getText();
+        //Forgot Pwd Message = 03:EMAIL~
+        sendForgotPwd(msg);
+    }//GEN-LAST:event_jButtonForgotPwdActionPerformed
 
     /**
      * @param args the command line arguments
@@ -335,8 +362,8 @@ public class IPClient extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPasswordField jPasswordFieldPwd;
     private javax.swing.JTextField jTextFieldEmail;
-    private javax.swing.JTextField jTextFieldPwd;
     private javax.swing.JTextField jTextFieldUname;
     // End of variables declaration//GEN-END:variables
 }

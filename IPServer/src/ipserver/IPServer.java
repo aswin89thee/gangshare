@@ -1,12 +1,10 @@
 package ipserver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.sql.*;
 import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -15,37 +13,171 @@ import java.util.Properties;
 class ServeClient implements Runnable {
 	Socket clientSocket;
 	Thread t;
-        
-	ServeClient(Socket s) {
+        String msg;
+        Connection dbCon;
+        InputStream in;
+        OutputStream out;
+		
+	ServeClient(Socket s, Connection con) {
 		clientSocket = s;
-		t = new Thread(this,"Serve Client");
+                dbCon = con;
+                t = new Thread(this,"Serve Client");
 		t.start();
 	}
         
     	public void run() {
-		int c, i=0;
-                char [] ch = new char[1000];
-                String msg;
-		try {
+		int c, i;
+                try {
 			InetAddress cia = clientSocket.getInetAddress();
 			System.out.println("Client " +cia.getHostAddress()+ " connected.");
-			InputStream in = clientSocket.getInputStream();
-			while (( c = in.read()) != -1) {
-                          ch[i] = (char) c;
-                          i++;
-			  System.out.print((char) c);
-			}
-			msg = new String(ch);
-                        msg = msg.trim();
-                        System.out.print("Message from client: " + msg);
-			//clientSocket.close();
+			in = clientSocket.getInputStream();
+                        out = clientSocket.getOutputStream();
+			
+                        while(true) {
+                            i = 0;
+                            char [] ch = new char[1000];
+        	
+                            while (( c = in.read()) != '\n') {
+                                ch[i] = (char) c;
+                                i++;
+                                System.out.print((char) c);
+                            }
+                            msg = new String(ch);
+                            msg = msg.trim();
+                            System.out.println("\nMessage from client: " + msg);
+                            StringTokenizer st = new StringTokenizer(msg,":");
+                            String msg_type = st.nextToken();
+                            if(msg_type.equals("01"))
+                                insertLogin(msg);
+                            else if(msg_type.equals("02"))
+                                verifyLogin(msg);
+                            else if(msg_type.equals("03"))
+                                verifyForgotPwd(msg);
+                        }
 		}
 		catch(IOException e){ 
 			System.out.println("EXCEPTION: "+e.getMessage());
 		}
 	}
         
+        //Send response to client
+    private void sendResponse(String res) {
+            try {
+                res = res.concat("\n");
+                byte bmsg[] = res.getBytes();
+                out.write(bmsg);
+                System.out.println("Message sent to Client: "+ res);
+            } 
+            catch(Exception e) {
+                System.out.println("EXCEPTION: "+e.getMessage());
+            }
+    }
+        
+    //Insert new user data in login_info table and return 0=Success -1=Failure to client
+    private void insertLogin(String msg) {
+        System.out.println("Inserting...");
+        try {
+                StringTokenizer st = new StringTokenizer(msg,":");
+                int i;
+                
+                // MESSAGE_TYPE:USERNAME:PASSWORD:EMAIL~ (Delimiter = :)
+                String msg_type = st.nextToken();
+                String uname = st.nextToken();
+                String pwd = st.nextToken();
+                String email = st.nextToken();
+                
+                Statement stmt2 = dbCon.createStatement();
+                String query = "INSERT INTO LOGIN_INFO"  ;
+                query += " VALUES(\'"+uname+"\',\'"+pwd+"\',\'"+email+"\');";
+                
+                System.out.println(query);
+                i = stmt2.executeUpdate(query);
+                
+                if(i > 0) {
+                    System.out.println("1 record inserted.");
+                    sendResponse("0");
+                }
+                else {
+                    System.out.println("No record inserted.");
+                    sendResponse("-1");
+                }
+        }
+        catch(Exception e){
+            System.out.println("EXCEPTION: "+e.getMessage());
+            sendResponse("-1");
+        }    
+    }        
+    
+//verify login credentials 0=Success -1=Pwd incorrect -2=Username incorrect
+private void verifyLogin(String msg) {
+    try{
+              StringTokenizer st = new StringTokenizer(msg,":");
+              // 02:USERNAME:PASSWORD~
+              String msg_type = st.nextToken();
+              String uname = st.nextToken();
+              String pwd = st.nextToken();
+                
+              System.out.println("Selecting....");
+              Statement stmt = dbCon.createStatement();
+              String query = "SELECT password FROM login_info where username = \'"+uname+"\';"; 
+                    
+              System.out.println(query);
+              ResultSet table = stmt.executeQuery(query);
+              
+              if(!table.next())  {
+                  System.out.println("Username invalid.");
+                  sendResponse("-2");
+              }
+              else {
+                  if(!pwd.equals(table.getString(1)) ) {
+                      System.out.println("Password invalid.");
+                      sendResponse("-1");
+                  }
+                  else {
+                      System.out.println("Login SUccessful!");
+                      sendResponse("0");
+                  } 
+                  
+               }
+            }
+            catch(Exception e) {
+                System.out.println("EXCEPTION: "+e.getMessage());
+            } 
+   }
+
+private void verifyForgotPwd(String msg) {
+    try{
+              StringTokenizer st = new StringTokenizer(msg,":");
+              // 03:EMAIL~
+              String msg_type = st.nextToken();
+              String email = st.nextToken();
+                
+              System.out.println("Selecting....");
+              Statement stmt = dbCon.createStatement();
+              String query = "SELECT Username,password FROM login_info where email = \'"+email+"\';"; 
+                    
+              System.out.println(query);
+              ResultSet table = stmt.executeQuery(query);
+              
+              if(!table.next())  {
+                  System.out.println("Email not registered.");
+                  sendResponse("-1");
+              }
+              else {
+              // SEND USERNAME AND PASSWORD IN MAIL
+                String uname = table.getString(1);
+                String pwd = table.getString(2);
+                System.out.println("PASSWORD REMINDER: Username: "+uname+"Password: "+pwd);
+                sendResponse("0");
+              }
+        } 
+      catch(Exception e) {
+                System.out.println("EXCEPTION: "+e.getMessage());
+                    sendResponse("-1");
+            } 
+   }
 }
+
 
 public class IPServer {
 
@@ -54,7 +186,7 @@ public class IPServer {
         private static final String DB = "gangshare",
                                 HOST = "jdbc:mysql://localhost/",
                                 ACCOUNT = "root",
-                                PASSWORD = "password",
+                                PASSWORD = "mysql",
                                 DRIVER = "com.mysql.jdbc.Driver";
         public static Connection con;
 
@@ -77,32 +209,6 @@ public class IPServer {
                 }
         }
 
-        //select customer record
-private static void selectLogin() {
-    try{
-           System.out.println("Selecting....");
-           Statement stmt = con.createStatement();
-           String query = "SELECT * FROM login_info"; 
-                    
-              System.out.println(query);
-              ResultSet table = stmt.executeQuery(query);
-              
-              
-              if(!table.next())  {
-                  System.out.println("No Row.");
-              }
-              else {
-                 System.out.println("Login Id: " + table.getInt(1));
-                 System.out.println("Username: " + table.getString(2));
-                 System.out.println("Password: " + table.getString(3));
-                 System.out.println("Email: " + table.getString(4)); 
-               }
-            }
-            catch(Exception e) {
-                System.out.println("EXCEPTION: "+e.getMessage());
-            } 
-   }
-
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 		ServerSocket ss = new ServerSocket(serverPort);
@@ -110,7 +216,7 @@ private static void selectLogin() {
 		initDB();
                 while(true) {
                         Socket s = ss.accept();
-			new ServeClient(s);
+			new ServeClient(s,con);
 		}
 	}
 }
