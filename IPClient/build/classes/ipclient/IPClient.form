@@ -101,8 +101,8 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="jTextFieldUname" max="32767" attributes="0"/>
-                              <Component id="jTextFieldPwd" min="-2" pref="115" max="-2" attributes="0"/>
+                              <Component id="jTextFieldUname" pref="115" max="32767" attributes="0"/>
+                              <Component id="jPasswordFieldPwd" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -121,7 +121,7 @@
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="jTextFieldPwd" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jPasswordFieldPwd" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="jButtonLogin" min="-2" max="-2" attributes="0"/>
@@ -150,7 +150,7 @@
             <Property name="text" type="java.lang.String" value="Password :"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JTextField" name="jTextFieldPwd">
+        <Component class="javax.swing.JPasswordField" name="jPasswordFieldPwd">
         </Component>
       </SubComponents>
     </Container>
@@ -253,6 +253,9 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Submit"/>
           </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonForgotPwdActionPerformed"/>
+          </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel3">
           <Properties>
