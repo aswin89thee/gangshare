@@ -1,5 +1,5 @@
 package ipclient;
-//test
+
 import javax.swing.*;
 import java.net.*;
 import java.io.*;
@@ -204,9 +204,15 @@ public class SignUp extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this,"Passwords don't match!","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
-        msg = "01:"+jTextFieldUname.getText()+":"+new String(jPasswordFieldPwd.getPassword())+":"+jTextFieldEmail.getText(); 
+        String password = new String(jPasswordFieldPwd.getPassword());
+        //System.out.println("Client Side - PublicKey = " + IPClient.publicKey);
+        String encryptedPassword = RSAEncryption.encrypt(IPClient.publicKey, password);
+        //System.out.println("encrypted pwd = "+encryptedPassword);
+        msg = "01:"+jTextFieldUname.getText()+":"+encryptedPassword+":"+jTextFieldEmail.getText(); 
        // Register Message = 01:USERNAME:PASSWORD:EMAIL~
-        sendMsg(msg);
+        //System.out.println("Sent message:"+msg);
+         sendMsg(msg);
+        
     }//GEN-LAST:event_jButtonRegisterActionPerformed
 
     private void jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelActionPerformed

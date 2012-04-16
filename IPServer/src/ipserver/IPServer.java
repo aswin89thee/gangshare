@@ -5,15 +5,10 @@ import java.net.*;
 import java.sql.*;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import framework.dboperations.DBOperations;
 
 /**
  *
  * @author Ramit
- * 
- * 
  */
 class ServeClient implements Runnable {
 	Socket clientSocket;
@@ -30,6 +25,11 @@ class ServeClient implements Runnable {
 		t.start();
 	}
         
+        public void sendInitialMessage(){
+            String str = "00";
+            str += ":"+IPServer.publicKey;
+            sendResponse(str);
+        }
     	public void run() {
 		int c, i;
                 try {
@@ -37,11 +37,10 @@ class ServeClient implements Runnable {
 			System.out.println("Client " +cia.getHostAddress()+ " connected.");
 			in = clientSocket.getInputStream();
                         out = clientSocket.getOutputStream();
-			
+			sendInitialMessage();
                         while(true) {
                             i = 0;
-                            char [] ch = new char[1000];
-        	
+                            char [] ch = new char[10000];
                             while (( c = in.read()) != '\n') {
                                 ch[i] = (char) c;
                                 i++;
@@ -58,15 +57,12 @@ class ServeClient implements Runnable {
                                 verifyLogin(msg);
                             else if(msg_type.equals("03"))
                                 verifyForgotPwd(msg);
-                            else if(msg_type.equals("04"))
-                                publishFile(msg,in);
                         }
 		}
 		catch(IOException e){ 
 			System.out.println("EXCEPTION: "+e.getMessage());
 		}
 	}
-        
         
         //Send response to client
     private void sendResponse(String res) {
@@ -80,45 +76,6 @@ class ServeClient implements Runnable {
                 System.out.println("EXCEPTION: "+e.getMessage());
             }
     }
-    
-    //Save the published file from client in the database
-    private void publishFile(String msg, InputStream in)
-    {
-        try {
-            char[] digest = new char[1024];
-            //Receive the length of the signature first through a DataInputStream
-            DataInputStream din = new DataInputStream(in);
-            int lengthOfDigest = din.readInt();
-            
-            //Get the digest of the file
-            for(int i = 0; i < lengthOfDigest;i++)
-            {
-                digest[i] = (char)in.read();
-            }
-            
-            StringTokenizer st = new StringTokenizer(msg,":");
-            String msg_type = st.nextToken();
-            String filename = st.nextToken();
-            double filesize = Integer.parseInt(st.nextToken());
-            String abstractOfFile = st.nextToken();
-            String ip = clientSocket.getInetAddress().toString();
-            
-            //Time to insert into the database
-            Properties vals = new Properties();
-            vals.put("name", filename);
-            vals.put("size",filesize);
-            vals.put("fileabstract",abstractOfFile);
-            vals.put("digest",digest.toString());
-            vals.put("ip",ip);
-            DBOperations.insertIntoFiles(vals,IPServer.con);
-            
-            
-            
-        } catch (IOException ex) {
-            Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-    }
         
     //Insert new user data in login_info table and return 0=Success -1=Failure to client
     private void insertLogin(String msg) {
@@ -130,8 +87,9 @@ class ServeClient implements Runnable {
                 // MESSAGE_TYPE:USERNAME:PASSWORD:EMAIL~ (Delimiter = :)
                 String msg_type = st.nextToken();
                 String uname = st.nextToken();
-                String pwd = st.nextToken();
+                String encryptedPwd = st.nextToken();
                 String email = st.nextToken();
+                String pwd = RSADecryption.decrypt(encryptedPwd);
                 
                 Statement stmt2 = dbCon.createStatement();
                 String query = "INSERT INTO LOGIN_INFO"  ;
@@ -162,8 +120,9 @@ private void verifyLogin(String msg) {
               // 02:USERNAME:PASSWORD~
               String msg_type = st.nextToken();
               String uname = st.nextToken();
-              String pwd = st.nextToken();
-                
+              String encryptedPwd = st.nextToken();
+              String pwd = RSADecryption.decrypt(encryptedPwd);
+                  
               System.out.println("Selecting....");
               Statement stmt = dbCon.createStatement();
               String query = "SELECT password FROM login_info where username = \'"+uname+"\';"; 
@@ -229,6 +188,7 @@ private void verifyForgotPwd(String msg) {
 public class IPServer {
 
 	static int serverPort = 6000;
+        static String publicKey;
         //Database
         private static final String DB = "gangshare",
                                 HOST = "jdbc:mysql://localhost/",
@@ -260,10 +220,29 @@ public class IPServer {
 		// TODO Auto-generated method stub
 		ServerSocket ss = new ServerSocket(serverPort);
 		System.out.println("ServerSocket created. Waiting for client to connect to port "+serverPort+"...");
-		initDB();
+		GenerateRSAKeys generateRSAKeys = new GenerateRSAKeys();
+                generateRSAKeys.generate("C:/RSA/Public", "C:/RSA/Private");
+                publicKey = readFileAsString("C:/RSA/Public");
+                initDB();
                 while(true) {
                         Socket s = ss.accept();
 			new ServeClient(s,con);
 		}
 	}
+        
+        private static String readFileAsString(String filePath) throws java.io.IOException{
+            StringBuffer fileData = new StringBuffer(1000);
+            BufferedReader reader = new BufferedReader(
+                    new FileReader(filePath));
+            char[] buf = new char[1024];
+            int numRead=0;
+            while((numRead=reader.read(buf)) != -1){
+                String readData = String.valueOf(buf, 0, numRead);
+                fileData.append(readData);
+                buf = new char[1024];
+            }
+            reader.close();
+            //System.out.println(fileData.toString());
+            return fileData.toString();
+        }
 }

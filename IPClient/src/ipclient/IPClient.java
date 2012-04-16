@@ -1,11 +1,7 @@
 package ipclient;
 
-import framework.fileoperations.FileCopier;
-import framework.hashing.Trigest;
 import java.io.*;
 import java.net.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 /**
  *
@@ -19,6 +15,7 @@ public class IPClient extends javax.swing.JFrame {
     int port = 6000;
     OutputStream out;
     InputStream in;
+    static String publicKey;
     /**
      * Creates new form IPClient2
      */
@@ -34,14 +31,25 @@ public class IPClient extends javax.swing.JFrame {
         System.out.println("Host " + host.getHostName() + " connected to Server on port " + port);
         out = s.getOutputStream();
         in = s.getInputStream();
+        readKeyFromStream(s);
+        System.out.println("Public Key recieved: "+publicKey);
         } 
         catch(Exception e) {
-            System.out.println("EXCEPTION: " + e.getMessage());
+            System.out.println("EXCEPTION:: initConnection : " + e.getMessage());
         }
     }
-    
-     //Send a string message to the server
-     private void sendMsg(String msg) {
+     
+    void readKeyFromStream(Socket s) throws IOException{
+        StringBuffer fileData = null;
+        BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+        char[] buf = new char[1024];
+        int numRead;
+        numRead = br.read(buf);
+        //br.close();
+        publicKey = String.valueOf(buf, 0, numRead).substring(3);
+    }
+     
+    private void sendMsg(String msg) {
         try {
             msg = msg.concat("\n");
             byte bmsg[] = msg.getBytes();
@@ -49,61 +57,7 @@ public class IPClient extends javax.swing.JFrame {
             System.out.println("Message sent to Server: "+ msg);
         } 
         catch(Exception e) {
-            System.out.println("EXCEPTION: "+e.getMessage());
-        }
-    }
-     
-     //Send byte message to server
-     private void sendMsg(byte[] bmsg)
-     {
-        try {
-            out.write(bmsg);
-        } catch (IOException ex) {
-            Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
-     }
-     
-     //Publish its own file to the server
-    public void publishFile(String path, String abstractOfFile)
-    {
-        try {
-            String type = new String("04");
-            String fileName = new String("");
-            double fileSize = 0f;
-            String hostIP = host.toString();
-            byte[] digestOfFile = new byte[8000];
-            
-            //Get the details of the file - name, size
-            File file = new File(path);
-            fileSize = file.length();
-            fileName = file.getName();
-            
-            
-            //Copy the file to c:/GangsharedFiles
-            String sharedDir = new String("C:/GangsharedFiles/");
-            String destFilePath = sharedDir + fileName;
-            File destFile = new File(destFilePath);
-            FileCopier.copyFile(file,destFile);
-            
-            //Calculate the digest of the file
-            Trigest trigest = new Trigest(destFile);
-            digestOfFile = trigest.getSignature();
-            
-            //Form the message to be sent
-            String msg = type + ":" + fileName + ":" + fileSize + ":" + abstractOfFile + ":";
-            sendMsg(msg);
-            
-            
-            //Send the length of the digest of the file
-            DataOutputStream dout = new DataOutputStream(out);
-            dout.writeInt(digestOfFile.length);
-            
-            //Now send the digest of the file
-            sendMsg(digestOfFile);
-            
-            
-        } catch (Exception ex) {
-            Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("EXCEPTION:: sendMsg : "+e.getMessage());
         }
     }
      
@@ -112,7 +66,7 @@ public class IPClient extends javax.swing.JFrame {
         char [] ch = new char[1000];	
         try {
             i=0;
-            while (( c = in.read()) != '~'||( c = in.read()) != -1) {
+            while (( c = in.read()) != '\n') {
                 ch[i] = (char) c;
                 i++;
                 //System.out.print((char) c);
@@ -122,7 +76,7 @@ public class IPClient extends javax.swing.JFrame {
             System.out.println("\nResponse from server: " + msg);
         }
         catch(Exception e){
-            System.out.println("EXCEPTION: "+e.getMessage());
+            System.out.println("EXCEPTION:: receiveResponse :"+e.getMessage());
         }
    }
      
@@ -351,7 +305,7 @@ public class IPClient extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(this,"Username and Password cannot be empty!","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
-        String msg = "02:"+jTextFieldUname.getText()+":"+(new String(jPasswordFieldPwd.getPassword()));
+        String msg = "02:"+jTextFieldUname.getText()+":"+RSAEncryption.encrypt(publicKey,new String(jPasswordFieldPwd.getPassword()));
         //Login Message = 02:USERNAME:PASSWORD~
         sendLogin(msg);
     }//GEN-LAST:event_jButtonLoginActionPerformed
