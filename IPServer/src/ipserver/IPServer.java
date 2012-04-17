@@ -1,10 +1,13 @@
 package ipserver;
 
+import framework.dboperations.DBOperations;
 import java.io.*;
 import java.net.*;
 import java.sql.*;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -57,12 +60,53 @@ class ServeClient implements Runnable {
                                 verifyLogin(msg);
                             else if(msg_type.equals("03"))
                                 verifyForgotPwd(msg);
+                            else if(msg_type.equals("04"))
+                                publishFile(msg,in);
                         }
 		}
 		catch(IOException e){ 
 			System.out.println("EXCEPTION: "+e.getMessage());
 		}
 	}
+        
+        //Save the published file from client in the database
+    private void publishFile(String msg, InputStream in)
+    {
+        try {
+            char[] digest = new char[1024];
+            //Receive the length of the signature first through a DataInputStream
+            DataInputStream din = new DataInputStream(in);
+            int lengthOfDigest = din.readInt();
+            
+            //Get the digest of the file
+            for(int i = 0; i < lengthOfDigest;i++)
+            {
+                digest[i] = (char)in.read();
+            }
+            
+            StringTokenizer st = new StringTokenizer(msg,":");
+            String msg_type = st.nextToken();
+            String filename = st.nextToken();
+            double filesize = Integer.parseInt(st.nextToken());
+            String abstractOfFile = st.nextToken();
+            String ip = clientSocket.getInetAddress().toString();
+            
+            //Time to insert into the database
+            Properties vals = new Properties();
+            vals.put("name", filename);
+            vals.put("size",filesize);
+            vals.put("fileabstract",abstractOfFile);
+            vals.put("digest",digest.toString());
+            vals.put("ip",ip);
+            DBOperations.insertIntoFiles(vals,IPServer.con);
+            
+            
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
         
         //Send response to client
     private void sendResponse(String res) {

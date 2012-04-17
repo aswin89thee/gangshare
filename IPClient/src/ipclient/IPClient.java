@@ -1,8 +1,12 @@
 package ipclient;
 
+import framework.fileoperations.FileCopier;
+import framework.hashing.Trigest;
 import java.io.*;
 import java.net.*;
 import javax.swing.JOptionPane;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author Ramit
@@ -60,6 +64,61 @@ public class IPClient extends javax.swing.JFrame {
             System.out.println("EXCEPTION:: sendMsg : "+e.getMessage());
         }
     }
+    
+    //Send byte message to server
+     private void sendMsg(byte[] bmsg)
+     {
+        try {
+            out.write(bmsg);
+        } catch (IOException ex) {
+            Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     }
+    
+    //Publish its own file to the server
+    public void publishFile(String path, String abstractOfFile)
+    {
+        try {
+            String type = "04";
+            String fileName = "";
+            double fileSize = 0f;
+            String hostIP = host.toString();
+            byte[] digestOfFile = new byte[8000];
+            
+            //Get the details of the file - name, size
+            File file = new File(path);
+            fileSize = file.length();
+            fileName = file.getName();
+            
+            
+            //Copy the file to c:/GangsharedFiles
+            String sharedDir = "C:/GangsharedFiles/";
+            String destFilePath = sharedDir + fileName;
+            File destFile = new File(destFilePath);
+            FileCopier.copyFile(file,destFile);
+            
+            //Calculate the digest of the file
+            Trigest trigest = new Trigest(destFile);
+            digestOfFile = trigest.getSignature();
+            
+            //Form the message to be sent
+            String msg = type + ":" + fileName + ":" + fileSize + ":" + abstractOfFile + ":";
+            sendMsg(msg);
+            
+            
+            //Send the length of the digest of the file
+            DataOutputStream dout = new DataOutputStream(out);
+            dout.writeInt(digestOfFile.length);
+            
+            //Now send the digest of the file
+            sendMsg(digestOfFile);
+            
+            
+        } catch (Exception ex) {
+            Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
      
      private void receiveResponse() {
         int c, i;
