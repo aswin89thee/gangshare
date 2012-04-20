@@ -44,4 +44,18 @@ public class DBOperations {
         
     }
     
+    public static void deleteAnIP(String IP, Connection con)
+    {
+        try {
+            String query = "delete from gangshare.files where ip=?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1,IP);
+            stmt.executeUpdate();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DBOperations.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                
+    }
+    
 }

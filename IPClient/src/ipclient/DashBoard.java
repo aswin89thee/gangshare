@@ -53,6 +53,11 @@ public class DashBoard extends javax.swing.JFrame {
         });
 
         LogoutButton.setText("Logout");
+        LogoutButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                LogoutButtonActionPerformed(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel1.setText("What do you want to do?");
@@ -96,9 +101,19 @@ public class DashBoard extends javax.swing.JFrame {
     }//GEN-LAST:event_SearchButtonActionPerformed
 
     private void PublishButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PublishButtonActionPerformed
-        // TODO add your handling code here:
+
         new PublishFrame(this,parent);
     }//GEN-LAST:event_PublishButtonActionPerformed
+
+    private void LogoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LogoutButtonActionPerformed
+        // Send logout message to server
+        String hostIP = parent.host.toString();
+        String msg = "100:"+hostIP;
+        parent.sendMsg(msg);
+        parent.setVisible(true);
+        this.setVisible(false);
+        this.dispose();
+    }//GEN-LAST:event_LogoutButtonActionPerformed
 
     /**
      * @param args the command line arguments

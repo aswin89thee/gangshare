@@ -53,7 +53,7 @@ public class IPClient extends javax.swing.JFrame {
         publicKey = String.valueOf(buf, 0, numRead).substring(3);
     }
      
-    private void sendMsg(String msg) {
+    public void sendMsg(String msg) {
         try {
             msg = msg.concat("\n");
             byte bmsg[] = msg.getBytes();
@@ -66,7 +66,7 @@ public class IPClient extends javax.swing.JFrame {
     }
     
     //Send byte message to server
-     private void sendMsg(byte[] bmsg)
+     public void sendMsg(byte[] bmsg)
      {
         try {
             out.write(bmsg);

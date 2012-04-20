@@ -133,7 +133,7 @@ public class PublishFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_ChooseFileButtonActionPerformed
 
     private void OKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKButtonActionPerformed
-        // TODO add your handling code here:
+        // Get the fie name, abstract and send it to server
         abstractOfFile = abstractTA.getText();
         root.publishFile(filePath, abstractOfFile);
         this.setVisible(false);
@@ -141,7 +141,7 @@ public class PublishFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_OKButtonActionPerformed
 
     private void CancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CancelButtonActionPerformed
-        // TODO add your handling code here:
+
         this.setVisible(false);
         parent.setVisible(true);
     }//GEN-LAST:event_CancelButtonActionPerformed

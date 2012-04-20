@@ -62,12 +62,24 @@ class ServeClient implements Runnable {
                                 verifyForgotPwd(msg);
                             else if(msg_type.equals("04"))
                                 publishFile(msg,in);
+                            else if(msg_type.equals("100"))
+                                logoutClient(msg);
                         }
 		}
 		catch(IOException e){ 
 			System.out.println("EXCEPTION: "+e.getMessage());
 		}
 	}
+        
+        //Logout a client from the system
+        private void logoutClient(String msg)
+        {
+            StringTokenizer st = new StringTokenizer(msg,":");
+            String msg_type = st.nextToken();
+            String IP = st.nextToken();
+            DBOperations.deleteAnIP(IP,IPServer.con);
+        }
+        
         
         //Save the published file from client in the database
     private void publishFile(String msg, InputStream in)
