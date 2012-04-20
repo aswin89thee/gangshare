@@ -120,8 +120,9 @@ public class IPClient extends javax.swing.JFrame {
     }
 
      
-     private void receiveResponse() {
+     private String receiveResponse() {
         int c, i;
+        String msg="";
         char [] ch = new char[1000];	
         try {
             i=0;
@@ -130,18 +131,24 @@ public class IPClient extends javax.swing.JFrame {
                 i++;
                 //System.out.print((char) c);
             }
-            String msg = new String(ch);
+            msg = new String(ch);
             msg = msg.trim();
             System.out.println("\nResponse from server: " + msg);
         }
         catch(Exception e){
             System.out.println("EXCEPTION:: receiveResponse :"+e.getMessage());
         }
+        return msg;
    }
      
      private void sendLogin(String msg) {
+         String response = "";
          sendMsg(msg);
-         receiveResponse(); //0=Success -1=Pwd incorrect -2=Username incorrect
+         response = receiveResponse(); //0=Success -1=Pwd incorrect -2=Username incorrect
+         if(response.charAt(0) == '0')
+         {
+             new DashBoard(this);
+         }
      }
      
      private void sendForgotPwd(String msg) {
