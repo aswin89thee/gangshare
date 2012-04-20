@@ -9,12 +9,17 @@ package ipclient;
  * @author Aswin
  */
 public class DashBoard extends javax.swing.JFrame {
+    
+    IPClient parent;
 
     /**
      * Creates new form DashBoard
      */
-    public DashBoard(IPClient parent) {
+    public DashBoard(IPClient par) {
         initComponents();
+        parent = par;
+        parent.setVisible(false);
+        this.setVisible(true);
     }
 
     /**
