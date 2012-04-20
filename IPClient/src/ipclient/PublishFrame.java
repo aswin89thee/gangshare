@@ -58,6 +58,11 @@ public class PublishFrame extends javax.swing.JFrame {
         });
 
         CancelButton.setText("Cancel");
+        CancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                CancelButtonActionPerformed(evt);
+            }
+        });
 
         OKButton.setText("OK");
         OKButton.addActionListener(new java.awt.event.ActionListener() {
@@ -131,7 +136,15 @@ public class PublishFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         abstractOfFile = abstractTA.getText();
         root.publishFile(filePath, abstractOfFile);
+        this.setVisible(false);
+        parent.setVisible(true);
     }//GEN-LAST:event_OKButtonActionPerformed
+
+    private void CancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CancelButtonActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        parent.setVisible(true);
+    }//GEN-LAST:event_CancelButtonActionPerformed
 
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
