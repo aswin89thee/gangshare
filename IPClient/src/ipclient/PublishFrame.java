@@ -45,6 +45,7 @@ public class PublishFrame extends javax.swing.JFrame {
         abstractTA = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        fileNameLabel = new javax.swing.JLabel();
 
         jButton1.setText("jButton1");
 
@@ -96,6 +97,7 @@ public class PublishFrame extends javax.swing.JFrame {
                     .addComponent(jLabel2))
                 .addGap(52, 52, 52)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fileNameLabel)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(ChooseFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -109,9 +111,11 @@ public class PublishFrame extends javax.swing.JFrame {
                     .addComponent(jLabel1))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(32, 32, 32)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(fileNameLabel)
+                        .addGap(18, 18, 18)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 47, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 55, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(OKButton)
                             .addComponent(CancelButton))
@@ -129,7 +133,8 @@ public class PublishFrame extends javax.swing.JFrame {
         // TODO add your handling code here:
         FileDialog fd = new FileDialog(this,"Choose the file to publish",FileDialog.LOAD);
         fd.setVisible(true);
-        filePath = fd.getFile();
+        filePath = fd.getDirectory()+fd.getFile();
+        fileNameLabel.setText(filePath);
     }//GEN-LAST:event_ChooseFileButtonActionPerformed
 
     private void OKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_OKButtonActionPerformed
@@ -152,6 +157,7 @@ public class PublishFrame extends javax.swing.JFrame {
     private javax.swing.JButton ChooseFileButton;
     private javax.swing.JButton OKButton;
     private javax.swing.JTextArea abstractTA;
+    private javax.swing.JLabel fileNameLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

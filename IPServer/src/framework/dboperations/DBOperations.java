@@ -17,7 +17,7 @@ import java.util.logging.Logger;
  */
 public class DBOperations {
     
-    public static void insertIntoFiles(Properties vals,Connection con)
+    public static void insertIntoFiles(Properties vals,Connection con,byte[] digestOfFile)
     {
         try {
             String name = vals.getProperty("name");
@@ -32,8 +32,8 @@ public class DBOperations {
             stmt.setString(1, name);
             stmt.setDouble(2, filesize);
             stmt.setString(3, fileAbstract);
-            stmt.setString(4, digest);
-            stmt.setString(5, ip);
+            stmt.setString(4, ip);
+            stmt.setBytes(5, digestOfFile);
             
             stmt.executeUpdate();
             

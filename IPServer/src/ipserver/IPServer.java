@@ -85,32 +85,35 @@ class ServeClient implements Runnable {
     private void publishFile(String msg, InputStream in)
     {
         try {
-            char[] digest = new char[1024];
+            byte[] digest = new byte[1024];
             //Receive the length of the signature first through a DataInputStream
             DataInputStream din = new DataInputStream(in);
             int lengthOfDigest = din.readInt();
             
             //Get the digest of the file
-            for(int i = 0; i < lengthOfDigest;i++)
+            for(int i = 0; i < 1024;i++)
             {
-                digest[i] = (char)in.read();
+                digest[i] = (byte) in.read();
             }
             
             StringTokenizer st = new StringTokenizer(msg,":");
             String msg_type = st.nextToken();
             String filename = st.nextToken();
-            double filesize = Integer.parseInt(st.nextToken());
+            double filesize = Double.parseDouble(st.nextToken());
+            String filesizeString = filesize+"";
             String abstractOfFile = st.nextToken();
             String ip = clientSocket.getInetAddress().toString();
+            ip = ip.substring(1);
+            System.out.println("IPServer: Client IP is "+ip);
             
             //Time to insert into the database
             Properties vals = new Properties();
             vals.put("name", filename);
-            vals.put("size",filesize);
+            vals.put("size",filesizeString);
             vals.put("fileabstract",abstractOfFile);
             vals.put("digest",digest.toString());
             vals.put("ip",ip);
-            DBOperations.insertIntoFiles(vals,IPServer.con);
+            DBOperations.insertIntoFiles(vals,IPServer.con,digest);
             
             
             

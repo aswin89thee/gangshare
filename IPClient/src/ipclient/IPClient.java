@@ -83,7 +83,7 @@ public class IPClient extends javax.swing.JFrame {
             String fileName = "";
             double fileSize = 0f;
             String hostIP = host.toString();
-            byte[] digestOfFile = new byte[8000];
+            byte[] digestOfFile = new byte[1024];
             
             //Get the details of the file - name, size
             File file = new File(path);
@@ -95,6 +95,8 @@ public class IPClient extends javax.swing.JFrame {
             String sharedDir = "C:/GangsharedFiles/";
             String destFilePath = sharedDir + fileName;
             File destFile = new File(destFilePath);
+            System.out.println("Source = "+file.getAbsolutePath());
+            System.out.println("Destination = "+destFile.getAbsolutePath());
             FileCopier.copyFile(file,destFile);
             
             //Calculate the digest of the file
@@ -109,8 +111,13 @@ public class IPClient extends javax.swing.JFrame {
             //Send the length of the digest of the file
             DataOutputStream dout = new DataOutputStream(out);
             dout.writeInt(digestOfFile.length);
+            System.out.println("Length of digest is"+digestOfFile.length);
             
             //Now send the digest of the file
+            /*for(int i = 0; i < 1024;i++)
+            {
+                System.out.println(digestOfFile[i]);
+            }*/
             sendMsg(digestOfFile);
             
             
