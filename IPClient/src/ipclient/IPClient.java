@@ -7,6 +7,7 @@ import java.net.*;
 import javax.swing.JOptionPane;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 /**
  *
  * @author Ramit
@@ -20,12 +21,17 @@ public class IPClient extends javax.swing.JFrame {
     OutputStream out;
     InputStream in;
     static String publicKey;
+    Thread mythread;
+    static int peerport = 20000;
     /**
      * Creates new form IPClient2
      */
     public IPClient() {
         initComponents();
         initConnection();
+        mythread = new Thread(new PeerThread(this,peerport));
+        mythread.start();
+
     }
 
      private void initConnection() {
@@ -74,6 +80,48 @@ public class IPClient extends javax.swing.JFrame {
             Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
         }
      }
+     
+     
+     //Download a specific file from a specific peer
+     public void downloadFile(String IP, String fileName, int fileSize, JFrame f)
+     {
+        try {
+            OutputStream pout;
+            InputStream pin;
+            
+            Socket fileSocket = new Socket(IP,peerport);
+            String msg = "50:"+fileName+"\n";
+            
+            pout = fileSocket.getOutputStream();
+            pin = fileSocket.getInputStream();
+            
+            //Request the server for the file by sending the command msg
+            pout.write(msg.getBytes());
+            
+            byte[] fileContents = new byte[fileSize];
+            pin.read(fileContents);
+            
+            
+            //Put it in the file
+            String targetFile = "C:/GangdownloadedFiles/"+fileName;
+                //Create the file
+            File file = new File(targetFile);
+            file.createNewFile();
+            FileOutputStream fout = new FileOutputStream(targetFile);
+            fout.write(fileContents);
+            
+            //Create a dialog saying file successfully downloaded
+            JOptionPane.showMessageDialog(f,"File successfully downloaded!");
+            
+            
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(IPClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+     }
+    
+     
     
     //Publish its own file to the server
     public void publishFile(String path, String abstractOfFile)
@@ -127,10 +175,10 @@ public class IPClient extends javax.swing.JFrame {
     }
 
      
-     private String receiveResponse() {
+     public String receiveResponse() {
         int c, i;
         String msg="";
-        char [] ch = new char[1000];	
+        char [] ch = new char[10000];	
         try {
             i=0;
             while (( c = in.read()) != '\n') {

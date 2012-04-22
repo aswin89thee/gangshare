@@ -4,6 +4,8 @@
  */
 package ipclient;
 
+import java.io.InputStream;
+
 /**
  *
  * @author Aswin
@@ -11,7 +13,6 @@ package ipclient;
 public class DashBoard extends javax.swing.JFrame {
     
     IPClient parent;
-
     /**
      * Creates new form DashBoard
      */
@@ -98,6 +99,10 @@ public class DashBoard extends javax.swing.JFrame {
 
     private void SearchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SearchButtonActionPerformed
         // TODO add your handling code here:
+        Search s = new Search(this,parent);
+        s.setVisible(true);
+        this.setVisible(false);
+
     }//GEN-LAST:event_SearchButtonActionPerformed
 
     private void PublishButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_PublishButtonActionPerformed

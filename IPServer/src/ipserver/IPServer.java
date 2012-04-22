@@ -1,13 +1,13 @@
 package ipserver;
 
 import framework.dboperations.DBOperations;
+import framework.hashing.Trigest;
 import java.io.*;
 import java.net.*;
 import java.sql.*;
-import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.*; 
 
 /**
  *
@@ -51,7 +51,7 @@ class ServeClient implements Runnable {
                             }
                             msg = new String(ch);
                             msg = msg.trim();
-                            System.out.println("\nMessage from client: " + msg);
+                            System.out.println("\nMessage from client123: " + msg);
                             StringTokenizer st = new StringTokenizer(msg,":");
                             String msg_type = st.nextToken();
                             if(msg_type.equals("01"))
@@ -62,8 +62,11 @@ class ServeClient implements Runnable {
                                 verifyForgotPwd(msg);
                             else if(msg_type.equals("04"))
                                 publishFile(msg,in);
+                            else if(msg_type.equals("05"))
+                                search(msg);
                             else if(msg_type.equals("100"))
                                 logoutClient(msg);
+                            
                         }
 		}
 		catch(IOException e){ 
@@ -114,13 +117,9 @@ class ServeClient implements Runnable {
             vals.put("digest",digest.toString());
             vals.put("ip",ip);
             DBOperations.insertIntoFiles(vals,IPServer.con,digest);
-            
-            
-            
         } catch (IOException ex) {
             Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
     }
         
         //Send response to client
@@ -241,7 +240,93 @@ private void verifyForgotPwd(String msg) {
                     sendResponse("-1");
             } 
    }
+private void search(String msg) {
+        try {
+            byte[] fileDigest;
+            StringTokenizer st = new StringTokenizer(msg, ":");
+            String type = st.nextToken();
+            String searchString = st.nextToken();
+            Trigest trigest = new Trigest(searchString.toLowerCase());
+            byte[] searchDigest = trigest.getSignature();
+            String query = "select digest,name,ip,fileabstract, size from files";
+            Statement stmt = dbCon.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            ArrayList<Ranking> resultset = new ArrayList<Ranking>();
+            for(int k=0;k<1024;k++)
+            System.out.print(searchDigest[k]+" ");
+            System.out.println();
+            while(rs.next()){
+                fileDigest = rs.getBytes(1);  
+                System.out.println("File " + rs.getString(2) +" with digest " +fileDigest);
+                int i = compareSignatures(searchDigest, fileDigest);
+                resultset.add(new Ranking(i,rs.getString(2),rs.getString(3),rs.getString(4),rs.getDouble(5)));
+                System.out.println("after comparing count = " + i);
+                
+            }
+            Collections.sort(resultset, Ranking.COMPARE_BY_ONES);
+            Iterator<Ranking> it = resultset.iterator();
+            //while(it.hasNext()){
+            //    System.out.println(it.next().ones);
+            //}
+            sendSearchResult(resultset.size(),it);
+            System.out.println();
+        } catch (Exception ex) {
+            Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    int compareSignatures(byte[] s1,byte[] s2) {
+            int output = 0;
+            for(int i = 0; i<1024; i++){
+                int andResult = s1[i] & s2[i];
+                //System.out.println(i+" " + s1[i]+ " " + s2[i]);
+                while(andResult != 0){
+                    System.out.println("inside while " + andResult + "for i = " + i);
+                    output += andResult & 1;
+                    andResult >>= 1;
+                }
+            }
+            return output;
+    }
+    
+    void sendSearchResult(int resultCount, Iterator<Ranking> it) {
+        int i;
+        String msg;
+        sendResponse("69:" + resultCount);
+        while(it.hasNext()){
+                Ranking e = it.next();
+                msg = "70:"+e.fileName+":"+e.ip+":"+e.abs+":"+e.size;
+                System.out.println("Sending Search Result to client: "+msg);
+                sendResponse(msg);        
+            }
+        }
 }
+    
+    
+class Ranking {
+
+    public Integer ones;
+    public String fileName;
+    public String ip;
+    public String abs; //abstract
+    public String size;
+    
+    Ranking(int o, String f, String i, String a, double size){
+        ones = new Integer(o);
+        fileName = f;
+        ip = i;
+        abs = a;
+        this.size = size+"";
+    }
+    
+    public static Comparator<Ranking> COMPARE_BY_ONES = new Comparator<Ranking>() {
+        public int compare(Ranking one, Ranking other) {
+            return other.ones.compareTo(one.ones);
+        }
+    };
+}
+
+
 
 
 public class IPServer {
