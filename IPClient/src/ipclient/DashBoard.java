@@ -4,6 +4,7 @@
  */
 package ipclient;
 
+import java.io.File;
 import java.io.InputStream;
 
 /**
@@ -38,6 +39,7 @@ public class DashBoard extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Gangshare-C Dashboard");
 
         PublishButton.setText("Publish a File");
         PublishButton.addActionListener(new java.awt.event.ActionListener() {
@@ -70,28 +72,28 @@ public class DashBoard extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(122, 122, 122)
+                        .addGap(92, 92, 92)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(PublishButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(SearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(LogoutButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(110, 110, 110)
+                        .addGap(76, 76, 76)
                         .addComponent(jLabel1)))
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addContainerGap(81, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(11, 11, 11)
+                .addContainerGap(65, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(PublishButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(43, 43, 43)
-                .addComponent(SearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(43, 43, 43)
-                .addComponent(LogoutButton, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(45, Short.MAX_VALUE))
+                .addGap(46, 46, 46)
+                .addComponent(PublishButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(SearchButton)
+                .addGap(34, 34, 34)
+                .addComponent(LogoutButton)
+                .addGap(58, 58, 58))
         );
 
         pack();
@@ -112,14 +114,25 @@ public class DashBoard extends javax.swing.JFrame {
 
     private void LogoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LogoutButtonActionPerformed
         // Send logout message to server
-        String hostIP = parent.host.toString();
+        String hostIP = parent.host.getHostAddress();
         String msg = "100:"+hostIP;
         parent.sendMsg(msg);
         parent.setVisible(true);
         this.setVisible(false);
         this.dispose();
+        deleteSharedFiles();
     }//GEN-LAST:event_LogoutButtonActionPerformed
 
+    public void deleteSharedFiles()
+    {
+        String path = "C:/GangsharedFiles";
+        File folder = new File(path);
+        File[] listOfFiles = folder.listFiles();
+        for(int i = 0; i<listOfFiles.length;i++)
+        {
+            listOfFiles[i].delete();
+        }
+    }
     /**
      * @param args the command line arguments
      */

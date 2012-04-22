@@ -43,6 +43,8 @@ public class Search extends javax.swing.JFrame {
     
     DashBoard parent;
     IPClient root;
+    ArrayList<Ranking> resultset;
+                
     /**
      * Creates new form Search
      */
@@ -50,11 +52,15 @@ public class Search extends javax.swing.JFrame {
         parent = d;
         root = rt;
         initComponents();
+        jButtonDload.setVisible(false);
+        jListResult.setEnabled(false);
     }
 
     public String receiveSearchResult() {
         int c, i;
         String msg="";
+        Vector vResult = new Vector();
+        resultset = new ArrayList<Ranking>();        
         char [] ch = new char[1000];	
         try {
             i = 0;
@@ -69,9 +75,8 @@ public class Search extends javax.swing.JFrame {
             StringTokenizer st = new StringTokenizer(msg,":");
             String msg_type = st.nextToken();
             int resultCount = Integer.parseInt(st.nextToken());
-            if(msg_type.equals("69")){
-                Vector vResult = new Vector();
-                
+            if(msg_type.equals("69") && resultCount != 0){
+                jButtonDload.setVisible(true);
                 for(int k=0; k < resultCount; k++) {
                     msg="";
                     ch = new char[1000];	
@@ -92,9 +97,15 @@ public class Search extends javax.swing.JFrame {
                     String abs = st.nextToken();
                     String size = st.nextToken();
                     vResult.add(filename+"\t:\t"+abs);
+                    resultset.add(new Ranking(filename,ip,abs,Double.parseDouble(size)));
                 }
-                jListResult.setListData(vResult);
+                
             }
+            else {
+                vResult.add("No matched files.");
+                jButtonDload.setVisible(false);
+            }
+            jListResult.setListData(vResult);
         }
         catch(Exception e){
             System.out.println("EXCEPTION:: receiveResponse :"+e.getMessage());
@@ -114,6 +125,7 @@ public class Search extends javax.swing.JFrame {
         searchField = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jButtonSearch = new javax.swing.JButton();
+        jButtonBack = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jScrollPane1 = new javax.swing.JScrollPane();
         jListResult = new javax.swing.JList();
@@ -121,6 +133,7 @@ public class Search extends javax.swing.JFrame {
         jButtonDload = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Gangshare-C Search");
         setName("GANGSHARE - Search");
 
         jLabel1.setText("Keywords:");
@@ -132,20 +145,27 @@ public class Search extends javax.swing.JFrame {
             }
         });
 
+        jButtonBack.setText("Back");
+        jButtonBack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonBackActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(9, 9, 9)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(87, 87, 87)
-                        .addComponent(jButtonSearch)))
+                        .addComponent(jButtonSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonBack, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -156,15 +176,23 @@ public class Search extends javax.swing.JFrame {
                     .addComponent(searchField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButtonSearch)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonSearch)
+                    .addComponent(jButtonBack))
                 .addContainerGap())
         );
 
+        jListResult.setEnabled(false);
         jScrollPane1.setViewportView(jListResult);
 
         jLabel2.setText("Search Results");
 
         jButtonDload.setText("Download File");
+        jButtonDload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonDloadActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -184,7 +212,7 @@ public class Search extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap(240, Short.MAX_VALUE)
                 .addComponent(jButtonDload)
                 .addContainerGap())
         );
@@ -199,9 +227,9 @@ public class Search extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jButtonDload)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(16, Short.MAX_VALUE))
         );
 
         pack();
@@ -218,12 +246,29 @@ public class Search extends javax.swing.JFrame {
             String type = "05";
             String msg = type + ":" + searchString;
             root.sendMsg(msg);
+            jButtonDload.setVisible(true);
+            jListResult.setEnabled(true);
             receiveSearchResult();
         } catch (Exception ex) {
             Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }//GEN-LAST:event_jButtonSearchActionPerformed
+
+    private void jButtonDloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDloadActionPerformed
+        // TODO add your handling code here:
+        if(jListResult.getSelectedIndex() == -1) return;
+        int index = jListResult.getSelectedIndex();
+        Ranking selectedItem = resultset.get(index);
+        System.out.println("Download FIle:" + selectedItem.ip + selectedItem.fileName + (int)Double.parseDouble(selectedItem.size));
+        root.downloadFile(selectedItem.ip, selectedItem.fileName, (int)Double.parseDouble(selectedItem.size), this);
+    }//GEN-LAST:event_jButtonDloadActionPerformed
+
+    private void jButtonBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBackActionPerformed
+        // TODO add your handling code here:
+        this.setVisible(false);
+        parent.setVisible(true);
+    }//GEN-LAST:event_jButtonBackActionPerformed
 
     /**
      * @param args the command line arguments
@@ -241,6 +286,7 @@ public class Search extends javax.swing.JFrame {
         });
     }*/
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButtonBack;
     private javax.swing.JButton jButtonDload;
     private javax.swing.JButton jButtonSearch;
     private javax.swing.JLabel jLabel1;

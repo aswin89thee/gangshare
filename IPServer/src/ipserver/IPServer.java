@@ -147,11 +147,10 @@ class ServeClient implements Runnable {
                 String uname = st.nextToken();
                 String encryptedPwd = st.nextToken();
                 String email = st.nextToken();
-                String pwd = RSADecryption.decrypt(encryptedPwd);
                 
                 Statement stmt2 = dbCon.createStatement();
                 String query = "INSERT INTO LOGIN_INFO"  ;
-                query += " VALUES(\'"+uname+"\',\'"+pwd+"\',\'"+email+"\');";
+                query += " VALUES(\'"+uname+"\',\'"+encryptedPwd+"\',\'"+email+"\');";
                 
                 System.out.println(query);
                 i = stmt2.executeUpdate(query);
@@ -193,12 +192,12 @@ private void verifyLogin(String msg) {
                   sendResponse("-2");
               }
               else {
-                  if(!pwd.equals(table.getString(1)) ) {
+                  if(!pwd.equals(RSADecryption.decrypt(table.getString(1))) ) {
                       System.out.println("Password invalid.");
                       sendResponse("-1");
                   }
                   else {
-                      System.out.println("Login SUccessful!");
+                      System.out.println("Login Successful!");
                       sendResponse("0");
                   } 
                   
@@ -259,15 +258,17 @@ private void search(String msg) {
                 fileDigest = rs.getBytes(1);  
                 System.out.println("File " + rs.getString(2) +" with digest " +fileDigest);
                 int i = compareSignatures(searchDigest, fileDigest);
+                if(i > 1) {     //to filter out unmatched files
                 resultset.add(new Ranking(i,rs.getString(2),rs.getString(3),rs.getString(4),rs.getDouble(5)));
-                System.out.println("after comparing count = " + i);
-                
+                }
+                //System.out.println("after comparing count = " + i);               
             }
             Collections.sort(resultset, Ranking.COMPARE_BY_ONES);
             Iterator<Ranking> it = resultset.iterator();
             //while(it.hasNext()){
             //    System.out.println(it.next().ones);
             //}
+            
             sendSearchResult(resultset.size(),it);
             System.out.println();
         } catch (Exception ex) {
@@ -277,16 +278,24 @@ private void search(String msg) {
     
     int compareSignatures(byte[] s1,byte[] s2) {
             int output = 0;
+            int flag = 0;
             for(int i = 0; i<1024; i++){
                 int andResult = s1[i] & s2[i];
                 //System.out.println(i+" " + s1[i]+ " " + s2[i]);
+                if(andResult<s1[i]){
+                    flag = 1;
+                    break;
+                }
                 while(andResult != 0){
                     System.out.println("inside while " + andResult + "for i = " + i);
                     output += andResult & 1;
                     andResult >>= 1;
                 }
             }
-            return output;
+            if(flag == 0)
+                return output;
+            else
+                return -1;
     }
     
     void sendSearchResult(int resultCount, Iterator<Ranking> it) {
@@ -297,7 +306,7 @@ private void search(String msg) {
                 Ranking e = it.next();
                 msg = "70:"+e.fileName+":"+e.ip+":"+e.abs+":"+e.size;
                 System.out.println("Sending Search Result to client: "+msg);
-                sendResponse(msg);        
+                sendResponse(msg);
             }
         }
 }

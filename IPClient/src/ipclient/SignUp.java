@@ -46,7 +46,7 @@ public class SignUp extends javax.swing.JFrame {
         jButtonClear = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("GANGSHARE - New User SignUp");
+        setTitle("Gangshare-C New User SignUp");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Sign Up on GangShare"));
 
@@ -75,7 +75,7 @@ public class SignUp extends javax.swing.JFrame {
                     .addComponent(jTextFieldUname, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPasswordFieldPwd, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPasswordFieldPwd2, javax.swing.GroupLayout.Alignment.LEADING))
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(44, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -115,7 +115,7 @@ public class SignUp extends javax.swing.JFrame {
 
         jLabel5.setFont(new java.awt.Font("Baveuse", 0, 24)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(153, 0, 0));
-        jLabel5.setText("GangShare");
+        jLabel5.setText("GangShare-C");
 
         jButtonClear.setText("Clear");
         jButtonClear.addActionListener(new java.awt.event.ActionListener() {
@@ -129,21 +129,21 @@ public class SignUp extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(66, 66, 66)
-                            .addComponent(jLabel5)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButtonRegister)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonClear, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(3, Short.MAX_VALUE))
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jButtonRegister)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButtonClear, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(47, 47, 47)
+                        .addComponent(jLabel5)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -175,7 +175,13 @@ public class SignUp extends javax.swing.JFrame {
             String msg = new String(ch);
             msg = msg.trim();
             System.out.println("\nResponse from server: " + msg);
-        }
+            if(msg.equals("0")) {
+                JOptionPane.showMessageDialog(this,"Registration Successful.","Confirmation",JOptionPane.INFORMATION_MESSAGE);
+                clearForm();
+            }
+            else 
+                JOptionPane.showMessageDialog(this,"Unable to register. Username or email is already registered. Please try other values.","Error",JOptionPane.ERROR_MESSAGE);
+                }    
         catch(Exception e){
             System.out.println("EXCEPTION: "+e.getMessage());
         }
@@ -215,6 +221,12 @@ public class SignUp extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jButtonRegisterActionPerformed
 
+    void clearForm() {
+        jTextFieldUname.setText("");
+        jPasswordFieldPwd.setText("");
+        jTextFieldEmail.setText("");
+        jPasswordFieldPwd2.setText("");
+    }
     private void jButtonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCancelActionPerformed
         // TODO add your handling code here:
         parent.setVisible(true);
@@ -223,10 +235,7 @@ public class SignUp extends javax.swing.JFrame {
 
     private void jButtonClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonClearActionPerformed
         // TODO add your handling code here:
-        jTextFieldUname.setText("");
-        jPasswordFieldPwd.setText("");
-        jTextFieldEmail.setText("");
-        jPasswordFieldPwd2.setText("");
+        clearForm();
     }//GEN-LAST:event_jButtonClearActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

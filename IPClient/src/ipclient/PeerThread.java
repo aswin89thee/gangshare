@@ -33,6 +33,7 @@ public class PeerThread implements Runnable {
             while(true)
             {
                 Socket s = ps.accept();
+                System.out.println("Client conection accepted!");
                 InputStream in = s.getInputStream();
                 OutputStream out = s.getOutputStream();
                 
@@ -50,17 +51,19 @@ public class PeerThread implements Runnable {
                 String type = st.nextToken();
                 String fileName = st.nextToken();
 
-                if(type == "50")   //Request for a file. Should reply with the full file contents
+                if(type.equals("50"))   //Request for a file. Should reply with the full file contents
                 {
                     String fullFilePath = "C:/GangsharedFiles/"+fileName;
                     File requestedFile = new File(fullFilePath);
                     long filesize = requestedFile.length();
                     FileInputStream fin = new FileInputStream(fullFilePath);
                     byte[] fileData = new byte[(int)filesize];
+                    System.out.println("File Sixe: " + filesize);
                     fin.read(fileData);
-                    
+                    System.out.println("File Content Read: " + fileData);
                     //Send it to the peer requested
                     out.write(fileData);
+                    System.out.println("File sent to client.");
                     
                 }
                 

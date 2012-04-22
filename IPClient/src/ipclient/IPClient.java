@@ -91,7 +91,7 @@ public class IPClient extends javax.swing.JFrame {
             
             Socket fileSocket = new Socket(IP,peerport);
             String msg = "50:"+fileName+"\n";
-            
+            System.out.println("After connect: "+msg);
             pout = fileSocket.getOutputStream();
             pin = fileSocket.getInputStream();
             
@@ -204,6 +204,7 @@ public class IPClient extends javax.swing.JFrame {
          {
              new DashBoard(this);
          }
+         else JOptionPane.showMessageDialog(this,"Username or Password is incorrect.","Error",JOptionPane.ERROR_MESSAGE); 
      }
      
      private void sendForgotPwd(String msg) {
@@ -235,11 +236,11 @@ public class IPClient extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("GANGSHARE - Login");
+        setTitle("Gangshare-C Login");
 
         jLabel5.setFont(new java.awt.Font("Baveuse", 0, 24)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(153, 0, 0));
-        jLabel5.setText("GangShare");
+        jLabel5.setText("GangShare-C");
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Enter your credentials:"));
 
@@ -380,9 +381,9 @@ public class IPClient extends javax.swing.JFrame {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(149, 149, 149)
+                        .addGap(115, 115, 115)
                         .addComponent(jLabel5)))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -411,12 +412,12 @@ public class IPClient extends javax.swing.JFrame {
 
     private void jButtonExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExitActionPerformed
         // TODO add your handling code here:
-        try {
+        /*try {
             s.close();
         }
         catch(Exception e) {
             System.out.println("EXCEPTION: "+e.getMessage());;
-        }
+        }*/
         System.exit(1);
     }//GEN-LAST:event_jButtonExitActionPerformed
 

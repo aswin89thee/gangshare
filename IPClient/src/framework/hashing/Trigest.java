@@ -41,7 +41,8 @@ public class Trigest {
 		//System.out.println("Finished Creating Hash");
 
                 System.out.println("before while");
-		while (( line = bReader.readLine().toLowerCase()) != null){
+		while (( line = bReader.readLine()) != null){
+                    line.toLowerCase();
                     System.out.println("inside while");
 			for(int i=0; i<line.length()-2;i++){
                             System.out.println("inside for");
