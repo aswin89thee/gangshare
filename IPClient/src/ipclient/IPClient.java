@@ -23,10 +23,14 @@ public class IPClient extends javax.swing.JFrame {
     static String publicKey;
     Thread mythread;
     static int peerport = 20000;
+    String serverIp;
+    Config parent;
     /**
      * Creates new form IPClient2
      */
-    public IPClient() {
+    public IPClient(Config c,String ip) {
+        serverIp = ip;
+        parent = c;
         initComponents();
         initConnection();
         mythread = new Thread(new PeerThread(this,peerport));
@@ -36,7 +40,7 @@ public class IPClient extends javax.swing.JFrame {
 
      private void initConnection() {
         try {
-        host = InetAddress.getLocalHost();
+        host = InetAddress.getByName(serverIp);
 	s = new Socket(host,port) ;
         System.out.println("Host " + host.getHostName() + " connected to Server on port " + port);
         out = s.getOutputStream();
@@ -46,6 +50,9 @@ public class IPClient extends javax.swing.JFrame {
         } 
         catch(Exception e) {
             System.out.println("EXCEPTION:: initConnection : " + e.getMessage());
+            JOptionPane.showMessageDialog(this,"Failed to connect to server.!","Error",JOptionPane.ERROR_MESSAGE);
+            this.setVisible(false);
+            parent.setVisible(true);
         }
     }
      
@@ -109,6 +116,11 @@ public class IPClient extends javax.swing.JFrame {
             file.createNewFile();
             FileOutputStream fout = new FileOutputStream(targetFile);
             fout.write(fileContents);
+            
+            //Message sent to Server to increment Hit Count
+            msg = "111:"+fileName+":"+IP;
+            System.out.println("Message sent to server to incrememt HitCount= "+ msg);
+            sendMsg(msg);
             
             //Create a dialog saying file successfully downloaded
             JOptionPane.showMessageDialog(f,"File successfully downloaded!");
@@ -209,7 +221,12 @@ public class IPClient extends javax.swing.JFrame {
      
      private void sendForgotPwd(String msg) {
          sendMsg(msg);
-         receiveResponse(); //0=Success -1=Failure
+         String res = receiveResponse(); //0=Success -1=Failure
+         if(res.equals("0")) {
+            JOptionPane.showMessageDialog(this,"Email sent.","Notification",JOptionPane.INFORMATION_MESSAGE);
+         }
+         else JOptionPane.showMessageDialog(this,"Email not sent. Please try later.","Error",JOptionPane.ERROR_MESSAGE);
+        jTextFieldEmail.setText("");
      }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -443,47 +460,7 @@ public class IPClient extends javax.swing.JFrame {
         sendForgotPwd(msg);
     }//GEN-LAST:event_jButtonForgotPwdActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /*
-         * Set the Nimbus look and feel
-         */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /*
-         * If Nimbus (introduced in Java SE 6) is not available, stay with the
-         * default look and feel. For details see
-         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(IPClient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(IPClient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(IPClient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(IPClient.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /*
-         * Create and display the form
-         */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                new IPClient().setVisible(true);
-            }
-        });
-    }
+ 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonExit;
     private javax.swing.JButton jButtonForgotPwd;

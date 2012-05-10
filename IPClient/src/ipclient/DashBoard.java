@@ -37,6 +37,7 @@ public class DashBoard extends javax.swing.JFrame {
         SearchButton = new javax.swing.JButton();
         LogoutButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        jButtonUnpublish = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Gangshare-C Dashboard");
@@ -65,6 +66,13 @@ public class DashBoard extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel1.setText("What do you want to do?");
 
+        jButtonUnpublish.setText("Un-publish");
+        jButtonUnpublish.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonUnpublishActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -73,10 +81,11 @@ public class DashBoard extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(92, 92, 92)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(PublishButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(SearchButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(LogoutButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(PublishButton, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
+                            .addComponent(SearchButton, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
+                            .addComponent(LogoutButton, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
+                            .addComponent(jButtonUnpublish, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(76, 76, 76)
                         .addComponent(jLabel1)))
@@ -91,7 +100,9 @@ public class DashBoard extends javax.swing.JFrame {
                 .addComponent(PublishButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(SearchButton)
-                .addGap(34, 34, 34)
+                .addGap(5, 5, 5)
+                .addComponent(jButtonUnpublish)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(LogoutButton)
                 .addGap(58, 58, 58))
         );
@@ -121,7 +132,14 @@ public class DashBoard extends javax.swing.JFrame {
         this.setVisible(false);
         this.dispose();
         deleteSharedFiles();
+        System.exit(0);
     }//GEN-LAST:event_LogoutButtonActionPerformed
+
+    private void jButtonUnpublishActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonUnpublishActionPerformed
+        // TODO add your handling code here:
+        new Unpublish(this, parent).setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_jButtonUnpublishActionPerformed
 
     public void deleteSharedFiles()
     {
@@ -141,6 +159,7 @@ public class DashBoard extends javax.swing.JFrame {
     private javax.swing.JButton LogoutButton;
     private javax.swing.JButton PublishButton;
     private javax.swing.JButton SearchButton;
+    private javax.swing.JButton jButtonUnpublish;
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 }

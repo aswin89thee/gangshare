@@ -27,10 +27,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <EmptySpace min="-2" pref="92" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="PublishButton" alignment="0" min="-2" pref="126" max="-2" attributes="0"/>
-                          <Component id="SearchButton" min="-2" pref="126" max="-2" attributes="0"/>
-                          <Component id="LogoutButton" min="-2" pref="126" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="PublishButton" alignment="0" pref="126" max="32767" attributes="0"/>
+                          <Component id="SearchButton" pref="126" max="32767" attributes="0"/>
+                          <Component id="LogoutButton" pref="126" max="32767" attributes="0"/>
+                          <Component id="jButtonUnpublish" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -51,7 +52,9 @@
               <Component id="PublishButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="SearchButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="34" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+              <Component id="jButtonUnpublish" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="LogoutButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
           </Group>
@@ -90,6 +93,14 @@
         </Property>
         <Property name="text" type="java.lang.String" value="What do you want to do?"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="jButtonUnpublish">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Un-publish"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButtonUnpublishActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

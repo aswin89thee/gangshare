@@ -42,9 +42,9 @@ public class Trigest {
 
 
 		while (( line = bReader.readLine()) != null){
-                    line.toLowerCase();
+                    line = line.toLowerCase();
                     for(int i=0; i<line.length()-2;i++){
-				if (line.substring(i,i+3).indexOf(" ") == -1){
+				if (line.substring(i,i+3).indexOf(" ") == -1 && line.substring(i,i+3).indexOf(" ") == -1 && line.substring(i,i+3).indexOf("/") == -1){
 					if (tripletHash.containsKey(line.substring(i, i + 3)))
 						tripletHash.put( line.substring(i, i + 3) , new Integer( 1 ) );
 					else

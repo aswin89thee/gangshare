@@ -1,0 +1,7 @@
+CSC/ECE 573 Internet Protocols Project
+Spring 2012
+DGOOGLE: A Distributed Peer-to-Peer File Sharing System
+1. Overview
+You are to implement a full-blown (commercial-quality) distributed Peer-to-Peer file
+sharing system, DGOOGLE, in which users (peers) are capable of efficiently searching
+for content in the system using a Google-like text search engine. You will need to

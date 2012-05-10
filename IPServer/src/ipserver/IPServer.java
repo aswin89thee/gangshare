@@ -1,5 +1,6 @@
 package ipserver;
 
+import framework.EmailManager.EmailManager;
 import framework.dboperations.DBOperations;
 import framework.hashing.Trigest;
 import java.io.*;
@@ -9,6 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.*; 
 
+    
+    
 /**
  *
  * @author Ramit
@@ -66,6 +69,11 @@ class ServeClient implements Runnable {
                                 search(msg);
                             else if(msg_type.equals("100"))
                                 logoutClient(msg);
+                            else if(msg_type.equals("25"))
+                                unpublishFile(msg, clientSocket.getInetAddress().getHostAddress());
+                            else if(msg_type.equals("111"))
+                                incrementHitCount(msg);
+                            
                             
                         }
 		}
@@ -73,13 +81,23 @@ class ServeClient implements Runnable {
 			System.out.println("EXCEPTION: "+e.getMessage());
 		}
 	}
+
+        //increment HitCount of file in DB
+        public void incrementHitCount(String msg) {
+            StringTokenizer st = new StringTokenizer(msg,":");
+            String msg_type = st.nextToken();
+            String fileName = st.nextToken();
+            String IP = st.nextToken();
+            DBOperations.updateHitCount(fileName,IP,IPServer.con);
+            System.out.println("HitCount updated in DB.");
+        }
         
         //Logout a client from the system
         private void logoutClient(String msg)
         {
             StringTokenizer st = new StringTokenizer(msg,":");
             String msg_type = st.nextToken();
-            String IP = st.nextToken();
+            String IP = clientSocket.getInetAddress().getHostAddress();
             DBOperations.deleteAnIP(IP,IPServer.con);
         }
         
@@ -116,6 +134,7 @@ class ServeClient implements Runnable {
             vals.put("fileabstract",abstractOfFile);
             vals.put("digest",digest.toString());
             vals.put("ip",ip);
+            vals.put("hit_count", "0");
             DBOperations.insertIntoFiles(vals,IPServer.con,digest);
         } catch (IOException ex) {
             Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -228,9 +247,11 @@ private void verifyForgotPwd(String msg) {
               }
               else {
               // SEND USERNAME AND PASSWORD IN MAIL
-                String uname = table.getString(1);
+                   String uname = table.getString(1);
                 String pwd = table.getString(2);
-                System.out.println("PASSWORD REMINDER: Username: "+uname+"Password: "+pwd);
+                String content = "Dear "+uname+",\n\nYour password is "+RSADecryption.decrypt(pwd)+"\n\nPlease keep your password safe!";
+                EmailManager newEmail = new EmailManager(email,content);
+                newEmail.sendEmail();
                 sendResponse("0");
               }
         } 
@@ -247,7 +268,7 @@ private void search(String msg) {
             String searchString = st.nextToken();
             Trigest trigest = new Trigest(searchString.toLowerCase());
             byte[] searchDigest = trigest.getSignature();
-            String query = "select digest,name,ip,fileabstract, size from files";
+            String query = "select digest,name,ip,fileabstract,size,hitcount from files";
             Statement stmt = dbCon.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             ArrayList<Ranking> resultset = new ArrayList<Ranking>();
@@ -258,57 +279,98 @@ private void search(String msg) {
                 fileDigest = rs.getBytes(1);  
                 System.out.println("File " + rs.getString(2) +" with digest " +fileDigest);
                 int i = compareSignatures(searchDigest, fileDigest);
+                int s = sumOnesInSignature(fileDigest);
                 if(i > 1) {     //to filter out unmatched files
-                resultset.add(new Ranking(i,rs.getString(2),rs.getString(3),rs.getString(4),rs.getDouble(5)));
+                resultset.add(new Ranking(i,rs.getString(2),rs.getString(3),rs.getString(4),rs.getDouble(5),rs.getInt(6),s));
                 }
                 //System.out.println("after comparing count = " + i);               
             }
-            Collections.sort(resultset, Ranking.COMPARE_BY_ONES);
+            Collections.sort(resultset, Ranking.COMPARE_BY_SUMONES_HITCOUNT);
             Iterator<Ranking> it = resultset.iterator();
-            //while(it.hasNext()){
-            //    System.out.println(it.next().ones);
-            //}
             
             sendSearchResult(resultset.size(),it);
-            System.out.println();
+            
         } catch (Exception ex) {
             Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     int compareSignatures(byte[] s1,byte[] s2) {
-            int output = 0;
-            int flag = 0;
-            for(int i = 0; i<1024; i++){
-                int andResult = s1[i] & s2[i];
-                //System.out.println(i+" " + s1[i]+ " " + s2[i]);
-                if(andResult<s1[i]){
-                    flag = 1;
-                    break;
-                }
-                while(andResult != 0){
-                    System.out.println("inside while " + andResult + "for i = " + i);
-                    output += andResult & 1;
-                    andResult >>= 1;
-                }
-            }
-            if(flag == 0)
-                return output;
-            else
-                return -1;
+           int output = 0;
+           int flag = 0;
+           for(int i = 0; i<1024; i++){
+               byte andResult = (byte)(s1[i] & s2[i]);
+               //System.out.println(i+" " + s1[i]+ " " + s2[i]);
+               if(andResult!=s1[i]){
+                   flag = 1;
+                   break;
+               }
+               if(andResult>0){
+                   while(andResult != 0){
+                       System.out.println("inside while " + andResult + "for i = " + i);
+                       output += andResult & 1;
+                       andResult >>= 1;
+                   }
+               }
+               else{
+                   while(andResult != 0){
+                       if((andResult & (-128)) != 0){
+                           output++;
+                       }
+                       andResult <<= 1;
+                   }
+               }
+           }
+           if(flag == 0)
+               return output;
+           else
+               return -1;
+   }
+
+    int sumOnesInSignature(byte[] s1) {
+         int count = 0;
+         for(int i = 0; i<s1.length;i++){
+             byte temp = s1[i];
+             int c = 0;
+             while(c < 8){
+                 count += temp&1;
+                 temp>>=1;
+                 c++;
+             }
+         }
+         return count;
     }
     
     void sendSearchResult(int resultCount, Iterator<Ranking> it) {
         int i;
         String msg;
         sendResponse("69:" + resultCount);
+        System.out.println("====>Search result Ranking Order:");
         while(it.hasNext()){
                 Ranking e = it.next();
                 msg = "70:"+e.fileName+":"+e.ip+":"+e.abs+":"+e.size;
+                System.out.println(e.fileName+" "+e.ip+" "+e.size+" "+e.sumOnes+" "+e.hitCount);
                 System.out.println("Sending Search Result to client: "+msg);
                 sendResponse(msg);
             }
         }
+
+    private void unpublishFile(String msg, String hostAddress) {
+        try {
+            StringTokenizer st = new StringTokenizer(msg, ":");
+            st.nextToken();
+            String fileName = st.nextToken();
+            String query = "delete from gangshare.files where ip = '" + hostAddress + "' and name = '" + fileName + "'";
+            Statement stmt = dbCon.createStatement();
+            stmt.executeUpdate(query);
+            sendResponse("26:1");
+        } catch (SQLException ex) {
+            sendResponse("26:0");
+            Logger.getLogger(ServeClient.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
 }
     
     
@@ -319,24 +381,36 @@ class Ranking {
     public String ip;
     public String abs; //abstract
     public String size;
+    public Integer hitCount;
+    public Integer sumOnes;
     
-    Ranking(int o, String f, String i, String a, double size){
+    Ranking(int o, String f, String i, String a, double size, int hc, int sumOnes){
         ones = new Integer(o);
         fileName = f;
         ip = i;
         abs = a;
         this.size = size+"";
+        hitCount = hc;
+        this.sumOnes = sumOnes;
     }
     
-    public static Comparator<Ranking> COMPARE_BY_ONES = new Comparator<Ranking>() {
-        public int compare(Ranking one, Ranking other) {
-            return other.ones.compareTo(one.ones);
-        }
-    };
+    public static Comparator<Ranking> COMPARE_BY_SUMONES_HITCOUNT = new Comparator<Ranking>() {
+        public int compare(Ranking o1, Ranking o2) {
+
+            Integer x1 = o1.sumOnes;
+            Integer x2 = o2.sumOnes;
+            int sComp = x1.compareTo(x2);
+
+            if (sComp != 0) {
+               return sComp;
+            } else {
+               Integer y1 = o1.hitCount;
+               Integer y2 = o2.hitCount;
+               return y2.compareTo(y1);
+            }
+       }
+};
 }
-
-
-
 
 public class IPServer {
 

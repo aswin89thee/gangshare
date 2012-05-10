@@ -25,8 +25,9 @@ public class DBOperations {
             String fileAbstract = vals.getProperty("fileabstract");
             String digest = vals.getProperty("digest");
             String ip = vals.getProperty("ip");
+            String hitCount = vals.getProperty("hit_count");
             
-            String query = "insert into gangshare.files values (?,?,?,?,?)";
+            String query = "insert into gangshare.files values (?,?,?,?,?,?)";
             
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, name);
@@ -34,7 +35,7 @@ public class DBOperations {
             stmt.setString(3, fileAbstract);
             stmt.setString(4, ip);
             stmt.setBytes(5, digestOfFile);
-            
+            stmt.setInt(6, Integer.parseInt(hitCount));
             stmt.executeUpdate();
             
             
@@ -56,6 +57,19 @@ public class DBOperations {
             Logger.getLogger(DBOperations.class.getName()).log(Level.SEVERE, null, ex);
         }
                 
+    }
+    
+    public static void updateHitCount(String fileName, String IP, Connection con) {
+        try {
+            String query = "update gangshare.files set hitcount = hitcount + 1 where name = ? and ip=? ";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1,fileName);
+            stmt.setString(2,IP);
+            stmt.executeUpdate();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(DBOperations.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
 }

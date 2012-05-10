@@ -113,9 +113,9 @@ public class SignUp extends javax.swing.JFrame {
             }
         });
 
-        jLabel5.setFont(new java.awt.Font("Baveuse", 0, 24)); // NOI18N
+        jLabel5.setFont(new java.awt.Font("Comic Sans MS", 1, 24)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(153, 0, 0));
-        jLabel5.setText("GangShare-C");
+        jLabel5.setText("GangShare");
 
         jButtonClear.setText("Clear");
         jButtonClear.addActionListener(new java.awt.event.ActionListener() {
@@ -141,7 +141,7 @@ public class SignUp extends javax.swing.JFrame {
                                 .addComponent(jButtonCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(47, 47, 47)
+                        .addGap(87, 87, 87)
                         .addComponent(jLabel5)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -178,6 +178,8 @@ public class SignUp extends javax.swing.JFrame {
             if(msg.equals("0")) {
                 JOptionPane.showMessageDialog(this,"Registration Successful.","Confirmation",JOptionPane.INFORMATION_MESSAGE);
                 clearForm();
+                this.setVisible(false);
+                parent.setVisible(true);
             }
             else 
                 JOptionPane.showMessageDialog(this,"Unable to register. Username or email is already registered. Please try other values.","Error",JOptionPane.ERROR_MESSAGE);

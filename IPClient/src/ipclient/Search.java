@@ -5,12 +5,14 @@
 package ipclient;
 
 import framework.hashing.Trigest;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -44,7 +46,7 @@ public class Search extends javax.swing.JFrame {
     DashBoard parent;
     IPClient root;
     ArrayList<Ranking> resultset;
-                
+    
     /**
      * Creates new form Search
      */
@@ -77,6 +79,7 @@ public class Search extends javax.swing.JFrame {
             int resultCount = Integer.parseInt(st.nextToken());
             if(msg_type.equals("69") && resultCount != 0){
                 jButtonDload.setVisible(true);
+                jButton1.setVisible(true);
                 for(int k=0; k < resultCount; k++) {
                     msg="";
                     ch = new char[1000];	
@@ -96,7 +99,7 @@ public class Search extends javax.swing.JFrame {
                     String ip = st.nextToken();
                     String abs = st.nextToken();
                     String size = st.nextToken();
-                    vResult.add(filename+"\t:\t"+abs);
+                    vResult.add(filename);
                     resultset.add(new Ranking(filename,ip,abs,Double.parseDouble(size)));
                 }
                 
@@ -104,6 +107,7 @@ public class Search extends javax.swing.JFrame {
             else {
                 vResult.add("No matched files.");
                 jButtonDload.setVisible(false);
+                jButton1.setVisible(false);
             }
             jListResult.setListData(vResult);
         }
@@ -131,6 +135,7 @@ public class Search extends javax.swing.JFrame {
         jListResult = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
         jButtonDload = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Gangshare-C Search");
@@ -194,6 +199,13 @@ public class Search extends javax.swing.JFrame {
             }
         });
 
+        jButton1.setText("Show Abstract");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -212,7 +224,9 @@ public class Search extends javax.swing.JFrame {
                 .addComponent(jLabel2)
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(240, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(53, 53, 53)
                 .addComponent(jButtonDload)
                 .addContainerGap())
         );
@@ -228,7 +242,9 @@ public class Search extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButtonDload)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButtonDload)
+                    .addComponent(jButton1))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
@@ -237,6 +253,10 @@ public class Search extends javax.swing.JFrame {
 
     private void jButtonSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSearchActionPerformed
         try {
+            if(searchField.getText().equals("")) {
+            JOptionPane.showMessageDialog(this,"Enter search keyword!","Error",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
             // TODO add your handling code here:
             String searchString = searchField.getText();
             
@@ -260,6 +280,11 @@ public class Search extends javax.swing.JFrame {
         if(jListResult.getSelectedIndex() == -1) return;
         int index = jListResult.getSelectedIndex();
         Ranking selectedItem = resultset.get(index);
+        //try{
+        //if(selectedItem.ip.equals(InetAddress.getLocalHost().getHostAddress())) {
+         //JOptionPane.showMessageDialog(this,"This is a local file!","Error",JOptionPane.ERROR_MESSAGE);
+         //return;   
+       // }}catch(Exception e){e.getMessage();}
         System.out.println("Download FIle:" + selectedItem.ip + selectedItem.fileName + (int)Double.parseDouble(selectedItem.size));
         root.downloadFile(selectedItem.ip, selectedItem.fileName, (int)Double.parseDouble(selectedItem.size), this);
     }//GEN-LAST:event_jButtonDloadActionPerformed
@@ -269,6 +294,19 @@ public class Search extends javax.swing.JFrame {
         this.setVisible(false);
         parent.setVisible(true);
     }//GEN-LAST:event_jButtonBackActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        int selectedIndex = jListResult.getSelectedIndex();
+        if( selectedIndex== -1){
+            JOptionPane.showMessageDialog(this, "No file Selected", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        Ranking selectedItem = resultset.get(selectedIndex);
+        
+        new ShowAbstract(this, selectedItem.fileName, selectedItem.abs).setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -286,6 +324,7 @@ public class Search extends javax.swing.JFrame {
         });
     }*/
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButtonBack;
     private javax.swing.JButton jButtonDload;
     private javax.swing.JButton jButtonSearch;

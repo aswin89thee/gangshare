@@ -40,23 +40,22 @@ public class Trigest {
 		}
 		//System.out.println("Finished Creating Hash");
 
-                System.out.println("before while");
+                //System.out.println("before while");
 		while (( line = bReader.readLine()) != null){
-                    line.toLowerCase();
-                    System.out.println("inside while");
+                    line = line.toLowerCase();
+                    //System.out.println("inside while");
 			for(int i=0; i<line.length()-2;i++){
-                            System.out.println("inside for");
+                            //System.out.println("inside for");
 				if (line.substring(i,i+3).indexOf(" ") == -1){
 					if (tripletHash.containsKey(line.substring(i, i + 3))){
-                                            System.out.println("from if part--------------------------------");
+                                            //System.out.println("from if part--------------------------------");
                                             tripletHash.put( line.substring(i, i + 3) , new Integer( 1 ) );
                                         }else{
 						tripletHash.put( "..." , new Integer( 1 ) );
-                                                System.out.println("from else part---------------------------------");
+                                                //System.out.println("from else part---------------------------------");
                                         }
 				}
-                                else
-                                    System.out.println("outer else ");
+                                
 			}
 		}
 		bReader.close();
