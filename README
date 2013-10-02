@@ -3,3 +3,9 @@ GANGSHARE: PEER TO PEER FILE SHARING SYSTEM
 -----------------------------------------------------------
 Welcome to Gangshare!
 -----------------------------------------------------------
+
+Peer-to-peer file sharing application with a centralized server containing information about files and peers.
+
+Allows for searching for files based on their contents and getting these files from the peers.
+
+Refer project.pdf for detailed requirements.
